@@ -11,3 +11,6 @@ def home():
 def forex():
     data = get_forex_data()
     return render_template('forex.html', data=data)
+
+if __name__ == '__main__':
+    app.run(port=8080, debug=True)
