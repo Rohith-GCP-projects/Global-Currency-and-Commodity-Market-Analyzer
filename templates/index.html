@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forex Converter</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        select, button { padding: 8px; margin: 5px; }
+        .result { margin-top: 20px; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+<h2>Forex Converter</h2>
+
+<form method="POST" action="/get_rate">
+    <label>Base Currency:</label>
+    <select name="base">
+        {% for c in currencies %}
+            <option value="{{c}}" {% if base == c %}selected{% endif %}>{{c}}</option>
+        {% endfor %}
+    </select>
+
+    <label>Target Currency:</label>
+    <select name="target">
+        {% for c in currencies %}
+            <option value="{{c}}" {% if target == c %}selected{% endif %}>{{c}}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Get Rate</button>
+</form>
+
+{% if rate %}
+<div class="result">
+    <p><strong>1 {{base}} = {{rate}} {{target}}</strong></p>
+    <p>Last updated: {{timestamp}}</p>
+</div>
+{% endif %}
+
+</body>
+</html>
