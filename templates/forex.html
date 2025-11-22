@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Forex Data</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border: 1px solid #b0d4ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Forex Calculator</h1>
+
+    {% if data.error %}
+    <p style="color: red;">Error: {{ data.error }}</p>
+    {% endif %}
+
+    <!-- FORM START -->
+    <form method="POST" action="/forex">
+
+        <label>Amount:</label>
+        <input type="number" name="amount" value="{{ selected_amount or 1 }}" step="0.01" required>
+        <br><br>
+
+        <label>Base Currency:</label>
+        <select name="base_currency">
+            {% for currency in data.currency_list %}
+            <option value="{{ currency }}" {% if selected_base==currency %}selected{% endif %}>
+                {{ currency }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Convert to:</label>
+        <select name="target_currency">
+            {% for currency in data.currency_list %}
+            <option value="{{ currency }}" {% if selected_target==currency %}selected{% endif %}>
+                {{ currency }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Convert</button>
+    </form>
+    <!-- FORM END -->
+
+    <!-- RESULT SECTION -->
+    {% if result %}
+    <div class="result-box">
+        <h3>Result:</h3>
+        <p>{{ selected_amount }} {{ selected_base }} = <strong>{{ result }} {{ selected_target }}</strong></p>
+        <p><small>Exchange Rate: 1 {{ selected_base }} = {{ rate }} {{ selected_target }}</small></p>
+        <p><small>Last Updated: {{ data.timestamp }}</small></p>
+    </div>
+    {% endif %}
+
+    <br>
+    <a href="/">Back to Home</a>
+</body>
+
+</html>

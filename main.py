@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request  # Import request
 from forex.forex import get_forex_data
 
 app = Flask(__name__)
@@ -7,10 +7,42 @@ app = Flask(__name__)
 def home():
     return render_template("index.html")
 
-@app.route('/forex')
-def forex():
-    data = get_forex_data()
-    return render_template('forex.html', data=data)
+@app.route('/forex', methods=['GET', 'POST'])
+def forex_page():
+    # Default values
+    base_currency = 'USD'
+    target_currency = 'EUR'
+    amount = 1
+    result = None
+    rate = None
+
+    # If the user submitted the form (clicked Convert)
+    if request.method == 'POST':
+        base_currency = request.form.get('base_currency')
+        target_currency = request.form.get('target_currency')
+        amount = float(request.form.get('amount'))
+
+    # Get data from your forex.py function
+    data = get_forex_data(base_currency)
+
+    # Calculate the result if we have rates
+    if request.method == 'POST' and 'all_rates' in data:
+        rates = data['all_rates']
+        if target_currency in rates:
+            rate = rates[target_currency]
+            result = round(amount * rate, 2)
+
+    return render_template('forex.html', 
+                           data=data, 
+                           result=result,
+                           rate=rate,
+                           selected_base=base_currency,
+                           selected_target=target_currency,
+                           selected_amount=amount)
+
+@app.route('/stocks')
+def stocks_page():
+    return render_template('stocks.html')
 
 if __name__ == '__main__':
-    app.run(port=8080, debug=True)
+    app.run(debug=True)
