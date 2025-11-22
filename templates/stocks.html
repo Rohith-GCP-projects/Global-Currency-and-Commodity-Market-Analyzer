@@ -19,17 +19,24 @@
         <input type="text" name="SEARCH_KEYWORD" placeholder="Enter stock keyword">
         <button type="submit">Submit</button>
 
-        {% if data %}
+        {% if symbol_list %}
         <h3>Found Symbols:</h3>
         <ul>
-            {% for symbol in data %}
-            <li>{{ symbol }}</li>
+            {% for symbol in symbol_list %}
+            <li>
+                <a href="/stocks?SEARCH_KEYWORD={{ symbol }}">{{ symbol }}</a>
+            </li>
             {% endfor %}
         </ul>
         {% endif %}
+
+        {% if stock_details %}
+        <h3>Stock Data for Selected Symbol:</h3>
+        <pre>{{ stock_details | tojson(indent=2) }}</pre>
+        {% endif %}
     </form>
 
-    <label name="stock_list">{{ data }}</label>
+    <!-- <label name="stock_list">{{ data }}</label> -->
     <a href="/">Back to Home</a>
 </body>
 

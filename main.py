@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request  # Import request
 from forex.forex import get_forex_data
-from stocks.stocks import get_stocks_data
+from stocks.stocks import get_stocks_data, fetch_symbol_data
 
 app = Flask(__name__)
 
@@ -45,13 +45,19 @@ def forex_page():
 def stocks_page():
     stocks_data = None 
     keyword = None
-    
+
     if request.method == 'POST':
         keyword = request.form.get('SEARCH_KEYWORD')
-        if keyword: 
-            stocks_data = get_stocks_data(keyword)
+        if keyword:
+            symbol_list = fetch_symbol_data(keyword)
+            return render_template('stocks.html', symbol_list=symbol_list)
+
+    symbol = request.args.get('SEARCH_KEYWORD')
+    if symbol:
+        stock_details = get_stocks_data(symbol)
+        return render_template('stocks.html', stock_details=stock_details)
     
-    return render_template('stocks.html', data=stocks_data)
+    return render_template('stocks.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
