@@ -14,6 +14,22 @@
 <body>
     <h1>Stock Market Data</h1>
     <p>Stock data will appear here.</p>
+
+    <form method="POST" action="/stocks">
+        <input type="text" name="SEARCH_KEYWORD" placeholder="Enter stock keyword">
+        <button type="submit">Submit</button>
+
+        {% if data %}
+        <h3>Found Symbols:</h3>
+        <ul>
+            {% for symbol in data %}
+            <li>{{ symbol }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </form>
+
+    <label name="stock_list">{{ data }}</label>
     <a href="/">Back to Home</a>
 </body>
 
