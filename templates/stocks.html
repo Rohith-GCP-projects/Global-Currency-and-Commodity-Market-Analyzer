@@ -19,12 +19,13 @@
         <input type="text" name="SEARCH_KEYWORD" placeholder="Enter stock keyword">
         <button type="submit">Submit</button>
 
-        {% if symbol_list %}
+        {% if symbol_list and symbol_name_list %}
         <h3>Found Symbols:</h3>
         <ul>
             {% for symbol in symbol_list %}
             <li>
-                <a href="/stocks?SEARCH_KEYWORD={{ symbol }}">{{ symbol }}</a>
+                <a href="/stocks?SEARCH_KEYWORD={{ symbol }}">{{ symbol }} - {{
+                    symbol_name_list[symbol_list.index(symbol)] }}</a>
             </li>
             {% endfor %}
         </ul>

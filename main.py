@@ -49,8 +49,8 @@ def stocks_page():
     if request.method == 'POST':
         keyword = request.form.get('SEARCH_KEYWORD')
         if keyword:
-            symbol_list = fetch_symbol_data(keyword)
-            return render_template('stocks.html', symbol_list=symbol_list)
+            symbol_list, symbol_name_list = fetch_symbol_data(keyword)
+            return render_template('stocks.html', symbol_list=symbol_list, symbol_name_list=symbol_name_list)
 
     symbol = request.args.get('SEARCH_KEYWORD')
     if symbol:
