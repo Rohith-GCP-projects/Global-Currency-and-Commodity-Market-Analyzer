@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request  # Import request
 from forex.forex import get_forex_data
-from stocks.stocks import get_stocks_data, fetch_symbol_data
+from stocks.stocks import get_stocks_data, fetch_symbol_data, insert_stock_data
 
 app = Flask(__name__)
 
