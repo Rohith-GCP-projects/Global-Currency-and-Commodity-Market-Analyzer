@@ -30,10 +30,10 @@ def get_stocks_data(symbol):
     response = requests.get(URL)
     data = response.json()
     
-    return data
+    return data.get("Time Series (Daily)", {})
 
 def insert_stock_data(symbol, data):
-    
+
     rows = []
 
     for date, values in data.items():

@@ -55,6 +55,7 @@ def stocks_page():
     symbol = request.args.get('SEARCH_KEYWORD')
     if symbol:
         stock_details = get_stocks_data(symbol)
+        insert_stock_data(symbol, stock_details)
         return render_template('stocks.html', stock_details=stock_details)
     
     return render_template('stocks.html')
