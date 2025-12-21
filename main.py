@@ -56,7 +56,7 @@ def stocks_page():
     if symbol:
         stock_details = get_stocks_data(symbol)
         insert_stock_data(symbol, stock_details)
-        return render_template('stocks.html', stock_details=stock_details)
+        return render_template('stocks.html', stock_details=stock_details, selected_symbol=symbol)
     
     return render_template('stocks.html')
 
