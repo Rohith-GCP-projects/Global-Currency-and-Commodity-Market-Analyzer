@@ -32,21 +32,49 @@ def get_stocks_data(symbol):
     
     return data.get("Time Series (Daily)", {})
 
+def get_max_date(symbol):
+    table_id = "commodity-market-analyzer.stocks_dataset.stocks_dataset"
+    query = f"""
+        SELECT MAX(date) as max_date
+        FROM `{table_id}`
+        WHERE symbol = @symbol
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("symbol", "STRING", symbol),
+        ]
+    )
+    query_job = client.query(query, job_config=job_config)
+    results = query_job.result()
+    
+    for row in results:
+        return row.max_date
+    return None
+
 def insert_stock_data(symbol, data):
+    max_date = get_max_date(symbol)
+    print(f"Max date for {symbol} in BigQuery: {max_date}")
 
     rows = []
 
     for date, values in data.items():
-        rows.append({
-            "symbol": symbol,
-            "date": date,
-            "open": float(values["1. open"]),
-            "high": float(values["2. high"]),
-            "low": float(values["3. low"]),
-            "close": float(values["4. close"]),
-            "volume": int(values["5. volume"])
-        })
+        # Only add rows that are newer than the max_date in BigQuery
+        if max_date is None or date > str(max_date):
+            rows.append({
+                "symbol": symbol,
+                "date": date,
+                "open": float(values["1. open"]),
+                "high": float(values["2. high"]),
+                "low": float(values["3. low"]),
+                "close": float(values["4. close"]),
+                "volume": int(values["5. volume"])
+            })
 
+    if not rows:
+        print(f"No new data to insert for {symbol}.")
+        return
+
+    print(f"Inserting {len(rows)} new rows for {symbol}.")
     table_id = "commodity-market-analyzer.stocks_dataset.stocks_dataset"
     errors = client.insert_rows_json(table_id, rows)
 
