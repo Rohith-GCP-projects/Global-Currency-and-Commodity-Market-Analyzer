@@ -56,14 +56,14 @@
     -->
         <!-- https://lookerstudio.google.com/u/0/reporting/create?c.mode=edit&c.source=BQ_UI&ds.type=CUSTOM_QUERY&ds.connector=BIG_QUERY&ds.sql=select%20*%20from%20%60commodity-market-analyzer.stocks_dataset.stocks_dataset%60%20where%20symbol%20%3D%20%27AAPL34.SAO%27;&ds.billingProjectId=commodity-market-analyzer&ds.projectId=commodity-market-analyzer&ds.tableId=anoncd0aa255_e546_471c_88d1_57df6c419c43&ds.datasetId=_875fb093cb36dc17a7790c75756485e44e2d7fed&ds.sqlType=STANDARD_SQL -->
         {% set base_url =
-        "https://lookerstudio.google.com/u/0/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999/page/tEnnC" %}
+        "https://lookerstudio.google.com/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999" %}
         {% set params = '{"SelectedSymbol":"' ~ selected_symbol ~ '"}' %}
         <iframe width="100%" height="600" src="{{ base_url }}?params={{ params | urlencode }}" frameborder="0"
             style="border:0" allowfullscreen></iframe>
         {% else %}
         <p>Please select a stock symbol to view the dashboard.</p>
         <iframe width="100%" height="600"
-            src="https://lookerstudio.google.com/u/0/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999/page/tEnnC"
+            src="https://lookerstudio.google.com/embed/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999/page/tEnnC"
             frameborder="0" style="border:0" allowfullscreen></iframe>
         {% endif %}
     </div>
