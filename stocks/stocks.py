@@ -75,8 +75,20 @@ def insert_stock_data(symbol, data):
         return
 
     print(f"Inserting {len(rows)} new rows for {symbol}.")
-    table_id = "commodity-market-analyzer.stocks_dataset.stocks_dataset"
+    table_id = "commodity-market-analyzer.stocks_dataset.stock_dataset"
     errors = client.insert_rows_json(table_id, rows)
 
     if errors:
         print("Insert errors:", errors)
+
+    query = '''
+        CREATE OR REPLACE TABLE `commodity-market-analyzer.stocks_dataset.stock_dataset_view`
+        AS SELECT * FROM `commodity-market-analyzer.stocks_dataset.stock_dataset` WHERE symbol = @symbol
+    '''
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("symbol", "STRING", symbol),
+        ]
+    )
+    query_job = client.query(query, job_config=job_config)
+    results = query_job.result()
