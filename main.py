@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request  # Import request
 from forex.forex import get_forex_data
 from stocks.stocks import get_stocks_data, fetch_symbol_data, insert_stock_data
+import time
 
 app = Flask(__name__)
 
@@ -52,13 +53,15 @@ def stocks_page():
             symbol_list, symbol_name_list = fetch_symbol_data(keyword)
             return render_template('stocks.html', symbol_list=symbol_list, symbol_name_list=symbol_name_list)
 
-    symbol = request.args.get('SEARCH_KEYWORD')
+    symbol = request.args.get('symbol')
+    current_time = int(time.time())  # Timestamp for cache busting
+    
     if symbol:
         stock_details = get_stocks_data(symbol)
         insert_stock_data(symbol, stock_details)
-        return render_template('stocks.html', stock_details=stock_details, selected_symbol=symbol)
+        return render_template('stocks.html', stock_details=stock_details, selected_symbol=symbol, timestamp=current_time)
     
-    return render_template('stocks.html')
+    return render_template('stocks.html', timestamp=current_time)
 
 if __name__ == '__main__':
     app.run(debug=True)

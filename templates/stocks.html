@@ -5,70 +5,195 @@
     <title>Stocks</title>
     <style>
         body {
-            font-family: Arial;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
+            background-color: #f8f9fa;
         }
 
         .dashboard-container {
             margin-top: 30px;
-            border-top: 2px solid #eee;
+            border-top: 2px solid #ddd;
             padding-top: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .nav-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .next-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .next-btn:hover {
+            background-color: #218838;
+        }
+
+        .clear-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .clear-btn:hover {
+            background-color: #c82333;
+        }
+
+        .status-badge {
+            font-size: 0.9em;
+            color: #666;
+            background: #eee;
+            padding: 4px 10px;
+            border-radius: 20px;
         }
     </style>
 </head>
 
 <body>
-    <h1>Stock Market Data</h1>
-    <p>Stock data will appear here.</p>
+    <h1>📈 Market Analyzer</h1>
 
     <form method="POST" action="/stocks">
-        <input type="text" name="SEARCH_KEYWORD" placeholder="Enter stock keyword">
-        <button type="submit">Submit</button>
+        <input type="text" name="SEARCH_KEYWORD" placeholder="Search symbol (e.g. AAPL)"
+            style="padding: 8px; width: 250px;">
+        <button type="submit" style="padding: 8px 16px;">Search</button>
 
         {% if symbol_list and symbol_name_list %}
-        <h3>Found Symbols:</h3>
-        <ul>
-            {% for symbol in symbol_list %}
-            <li>
-                <a href="/stocks?SEARCH_KEYWORD={{ symbol }}">{{ symbol }} - {{
-                    symbol_name_list[symbol_list.index(symbol)] }}</a>
-            </li>
-            {% endfor %}
-        </ul>
-        <!-- {% endif %}
-
-        {% if stock_details %}
-        <h3>Stock Data for Selected Symbol: {{ selected_symbol }}</h3>
-        <pre>{{ stock_details | tojson(indent=2) }}</pre>
-        {% endif %} -->
+        <div style="margin-top: 15px;">
+            <strong>Results:</strong>
+            <ul style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background: white;">
+                {% for symbol in symbol_list %}
+                <li>
+                    <a href="/stocks?symbol={{ symbol }}">{{ symbol }} - {{
+                        symbol_name_list[symbol_list.index(symbol)] }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </form>
 
     <div class="dashboard-container">
-        <h3>Market Analysis Dashboard (Looker Studio)</h3>
+        <div class="nav-controls">
+            <div class="btn-group">
+                <button id="btn-CANDLE" class="nav-btn active" onclick="switchPage('CANDLE')">🕯️ Candles</button>
+                <button id="btn-VOLUME" class="nav-btn" onclick="switchPage('VOLUME')">📊 Volume</button>
+            </div>
+            <div>
+                <span id="page-label" class="status-badge" style="margin-right: 10px;">Showing: Candlestick</span>
+                <button class="next-btn" onclick="nextChart()" style="margin-right: 10px;">Next Chart ➡️</button>
+                <a href="/stocks" class="clear-btn">Clear Selection ✖️</a>
+            </div>
+        </div>
+
         {% if selected_symbol %}
-        <p>Showing data for: <strong>{{ selected_symbol }}</strong></p>
-        <!-- 
-                To make this work, you need to:
-                1. Create a Parameter in Looker Studio named 'SelectedSymbol' (type: Text).
-                2. Use this parameter in your BigQuery Custom Query: 
-                   SELECT * FROM `your_table` WHERE symbol = @SelectedSymbol
-                3. Replace YOUR_REPORT_ID below.
-    -->
-        {% set base_url =
-        "https://lookerstudio.google.com/embed/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999" %}
-        {% set params = '{"SelectedSymbol":"' ~ selected_symbol ~ '"}' %}
-        <iframe width="100%" height="600" src="{{ base_url }}?params={{ params | urlencode }}" frameborder="0"
-            style="border:0" allowfullscreen></iframe>
-        {% else %}
-        <p>Please select a stock symbol to view the dashboard.</p>
-        <iframe width="100%" height="600"
-            src="https://lookerstudio.google.com/embed/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999/page/tEnnC"
+        <p>Selected Symbol: <strong>{{ selected_symbol }}</strong></p>
+
+        {% set report_id = "e6dc7662-9f39-467c-aaf7-8dfdfa2fd999" %}
+        {# We add a ds0.cache_buster to force Looker Studio to refresh data and use ds0.SelectedSymbol as the parameter
+        name #}
+        {% set params = '{"ds0.SelectedSymbol":"' ~ selected_symbol ~ '", "ds0.cache_buster":"' ~ timestamp ~ '"}' %}
+
+        <iframe id="looker-iframe" width="100%" height="800"
+            src="https://lookerstudio.google.com/embed/reporting/{{ report_id }}/page/tEnnC?params={{ params | urlencode }}"
             frameborder="0" style="border:0" allowfullscreen></iframe>
+
+        <script>
+            // CONFIGURATION: Replace with your actual Page IDs found in Looker Studio URL
+            const PAGES = [
+                { id: 'CANDLE', label: 'Candlestick', pageId: 'tEnnC' },
+                { id: 'VOLUME', label: 'Volume', pageId: 'PAGE2_ID' }       // Replace PAGE2_ID with your actual second page ID
+            ];
+
+            let currentIndex = 0;
+            const REPORT_ID = '{{ report_id }}';
+            const PARAMS = '{{ params | urlencode }}';
+
+            function updateUI() {
+                const chart = PAGES[currentIndex];
+                const iframe = document.getElementById('looker-iframe');
+
+                // Update iframe source with current page and current parameters
+                iframe.src = `https://lookerstudio.google.com/embed/reporting/${REPORT_ID}/page/${chart.pageId}?params=${PARAMS}`;
+
+                // Update buttons active state
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                const targetBtn = document.getElementById(`btn-${chart.id}`);
+                if (targetBtn) targetBtn.classList.add('active');
+
+                // Update text label
+                document.getElementById('page-label').innerText = `Showing: ${chart.label}`;
+            }
+
+            function switchPage(type) {
+                currentIndex = PAGES.findIndex(p => p.id === type);
+                updateUI();
+            }
+
+            function nextChart() {
+                currentIndex = (currentIndex + 1) % PAGES.length;
+                updateUI();
+            }
+        </script>
+
+        {% else %}
+        <div style="text-align: center; padding: 50px; color: #888;">
+            <h3>📊 Market Dashboard</h3>
+            <p>Search for a ticker and select a result to load interactive charts.</p>
+            <iframe width="100%" height="600"
+                src="https://lookerstudio.google.com/embed/reporting/e6dc7662-9f39-467c-aaf7-8dfdfa2fd999/page/tEnnC"
+                frameborder="0" style="border:0" allowfullscreen></iframe>
+        </div>
         {% endif %}
     </div>
 
-    <br>
-    <a href="/">Back to Home</a>
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="/" style="color: #007bff; text-decoration: none;">🏠 Return Home</a>
+    </div>
 </body>
 
 </html>
