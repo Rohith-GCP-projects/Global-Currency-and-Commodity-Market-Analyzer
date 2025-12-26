@@ -3,7 +3,7 @@ import os
 from google.cloud import bigquery
 
 API_KEY = os.getenv("STOCK_API_KEY")
-client = bigquery.Client()
+client = bigquery.Client(project="commodity-market-analyzer")
 
 
 def fetch_symbol_data(keyword):
@@ -75,7 +75,7 @@ def insert_stock_data(symbol, data):
         return
 
     print(f"Inserting {len(rows)} new rows for {symbol}.")
-    table_id = "commodity-market-analyzer.stocks_dataset.stock_dataset"
+    table_id = "commodity-market-analyzer.stocks_dataset.stocks_dataset"
     errors = client.insert_rows_json(table_id, rows)
 
     if errors:
@@ -83,12 +83,12 @@ def insert_stock_data(symbol, data):
 
     query = '''
         CREATE OR REPLACE TABLE `commodity-market-analyzer.stocks_dataset.stock_dataset_view`
-        AS SELECT * FROM `commodity-market-analyzer.stocks_dataset.stock_dataset` WHERE symbol = @symbol
+        AS SELECT * FROM `commodity-market-analyzer.stocks_dataset.stocks_dataset` WHERE symbol = @symbol
     '''
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter("symbol", "STRING", symbol),
         ]
     )
-    query_job = client.query(query, job_config=job_config)
+    query_job = client.query(query, job_config=job_config, location="asia-south1")
     results = query_job.result()
